@@ -1,4 +1,4 @@
-# AWS Terraform Skeleton (for CSE)
+# CSE AWS Terraform Skeleton
 
 This folder is the AWS Terraform skeleton aligned with the Azure full deployment IaC here: 
 - [IaC_full_deployment-latest-vm-image-Azure/IaC_full_deployment-latest-vm-image/main.tf](https://github.com/csdso-wavestone/IaC_full_deployment/tree/latest-vm-image)
