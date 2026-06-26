@@ -4,12 +4,12 @@ output "account_id" {
 }
 
 output "region" {
-  description = "Deployment AWS region."
+  description = "AWS region where the deployment will happen."
   value       = var.aws_region
 }
 
 output "name_prefix" {
-  description = "Shared naming prefix used in resources."
+  description = "The naming prefix used in resources, will be unique by trainee."
   value       = local.name_prefix
 }
 
@@ -29,17 +29,17 @@ output "ec2_public_dns" {
 }
 
 output "application_url" {
-  description = "Expected base URL for the gallery app."
+  description = "This builds the base URL for the gallery app."
   value       = "http://${aws_instance.app_vm.public_ip}/picturegallery"
 }
 
 output "logo_bucket_name" {
-  description = "S3 bucket for public logo objects."
+  description = "S3 bucket for public logo."
   value       = aws_s3_bucket.logo.bucket
 }
 
 output "logs_bucket_name" {
-  description = "S3 bucket for training logs."
+  description = "S3 bucket for collecting logs."
   value       = aws_s3_bucket.logs.bucket
 }
 
@@ -54,17 +54,17 @@ output "rds_port" {
 }
 
 output "cleanup_selector" {
-  description = "Tag selector used by cleanup script."
+  description = "This will be used for cleaning the sandbox ressources. Do not modify"
   value       = "Project=${var.project_tag}"
 }
 
 output "ec2_key_pair_name" {
-  description = "EC2 key pair name used by the app VM."
+  description = "EC2 key pair name used to access the VM."
   value       = aws_key_pair.app_vm.key_name
 }
 
 output "ec2_private_key_pem" {
-  description = "Generated private key for SSH access to app VM. Handle securely."
+  description = "Generated private key for SSH access to app VM. Handle with caution !"
   value       = tls_private_key.ec2_ssh.private_key_pem
   sensitive   = true
 }
