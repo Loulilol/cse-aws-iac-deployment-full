@@ -83,12 +83,12 @@ done
 INIT_FLAG="/var/lib/ec2-init-db-done"
 if [ ! -f "$INIT_FLAG" ]; then
     log "Initializing database"
+    grep -iv '^\(create database\|use \)' /var/www/html/picturegallery/sql.sql | \
     mysql \
         -h "$MYSQL_HOST" \
         -u "$MYSQL_USER" \
         -p"$MYSQL_PASSWORD" \
-        "$MYSQL_DATABASE" \
-        < /var/www/html/picturegallery/sql.sql || {
+        "$MYSQL_DATABASE" || {
             log "ERROR: Database initialization failed"
             exit 1
         }
