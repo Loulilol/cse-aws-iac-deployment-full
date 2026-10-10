@@ -1,89 +1,141 @@
-# AWS region where all resources will be deployed
 variable "aws_region" {
-  type    = string
-  default = "eu-west-3"
+  description = "AWS region for deployment."
+  type        = string
+  default     = "eu-west-3"
 }
 
-# Short trainee identifier used in resource names to keep them unique per trainee
-variable "nickname" {
-  type    = string
-  default = "trigram" # Replace this by your trigram, e.g., jdo for "John Doe" in lower case
+variable "aws_profile" {
+  description = "AWS CLI profile name used by Terraform provider."
+  type        = string
+  default     = "cse"
 }
 
-# Short region token used in resource naming
 variable "region_short" {
-  type    = string
-  default = "ew3"
+  description = "Short region token used in resource naming."
+  type        = string
+  default     = "ew3"
 }
 
-# Mandatory project tag used by cleanup policy
+variable "trainee_code" {
+  description = "Short trainee identifier used in names (example: t01)."
+  type        = string
+  default     = "t01"
+
+  validation {
+    condition     = can(regex("^t[0-9]{2}$", var.trainee_code))
+    error_message = "trainee_code must match ^t[0-9]{2}$ (example: t01)."
+  }
+}
+
 variable "project_tag" {
-  type    = string
-  default = "cse-aws"
+  description = "Mandatory project tag value used by cleanup policy."
+  type        = string
+  default     = "cse-aws"
+
+  validation {
+    condition     = var.project_tag == lower(var.project_tag)
+    error_message = "project_tag must be lowercase to match cleanup selector conventions."
+  }
 }
 
-# Environment tag value
 variable "environment" {
-  type    = string
-  default = "sandbox"
+  description = "Environment tag value."
+  type        = string
+  default     = "sandbox"
 }
 
-# VPC CIDR block
+variable "common_tags" {
+  description = "Optional additional tags merged with baseline tags."
+  type        = map(string)
+  default     = {}
+}
+
 variable "vpc_cidr" {
-  type    = string
-  default = "10.0.0.0/16"
+  description = "VPC CIDR."
+  type        = string
+  default     = "10.0.0.0/16"
 }
 
-# Public subnet CIDRs — two subnets in different Availability Zones (required by RDS)
 variable "public_subnet_cidr_az1" {
-  type    = string
-  default = "10.0.1.0/24"
+  description = "Public subnet CIDR (AZ1)."
+  type        = string
+  default     = "10.0.1.0/24"
 }
 
 variable "public_subnet_cidr_az2" {
-  type    = string
-  default = "10.0.2.0/24"
+  description = "Public subnet CIDR (AZ2)."
+  type        = string
+  default     = "10.0.2.0/24"
 }
 
 variable "availability_zone_az1" {
-  type    = string
-  default = "eu-west-3a"
+  description = "Availability Zone for public subnet 1."
+  type        = string
+  default     = "eu-west-3a"
 }
 
 variable "availability_zone_az2" {
-  type    = string
-  default = "eu-west-3b"
+  description = "Availability Zone for public subnet 2."
+  type        = string
+  default     = "eu-west-3b"
 }
 
-# EC2 instance type for the app VM
 variable "ec2_instance_type" {
-  type    = string
-  default = "t3.micro"
+  description = "EC2 instance type for vulnerable app VM."
+  type        = string
+  default     = "t3.micro"
 }
 
-# Database configuration
+variable "ec2_key_pair_name" {
+  description = "Optional EC2 key pair name override. Leave empty to auto-generate and create one during apply."
+  type        = string
+  default     = ""
+}
+
+variable "ec2_ami_id" {
+  description = "Optional custom AMI ID. Leave empty to use latest Amazon Linux 2023."
+  type        = string
+  default     = ""
+}
+
 variable "db_name" {
-  type    = string
-  default = "picturegallery"
+  description = "Initial database name."
+  type        = string
+  default     = "picturegallery"
 }
 
 variable "db_username" {
-  type    = string
-  default = "adminformation"
+  description = "Database admin username."
+  type        = string
+  default     = "adminformation"
 }
 
-# Database admin password — you MUST set this. Choose a strong password and save it to your notepad.
 variable "db_password" {
-  type      = string
-  sensitive = true
+  description = "Database admin password."
+  type        = string
+  sensitive   = true
 }
 
 variable "db_instance_class" {
-  type    = string
-  default = "db.t3.micro"
+  description = "RDS instance class."
+  type        = string
+  default     = "db.t3.micro"
 }
 
 variable "db_allocated_storage" {
-  type    = number
-  default = 20
+  description = "Allocated storage in GiB for RDS."
+  type        = number
+  default     = 20
+}
+
+variable "logo_bucket_purpose" {
+  description = "Purpose token for public logo bucket name."
+  type        = string
+  default     = "logo"
+}
+
+variable "logs_bucket_purpose" {
+  description = "Purpose token for logs bucket name."
+  type        = string
+  default     = "logs"
 }

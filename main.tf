@@ -134,7 +134,7 @@ resource "aws_key_pair" "app_vm" {
 
 # EC2 instance — our web server with LAMP stack
 resource "aws_instance" "app_vm" {
-  ami                         = data.aws_ami.amazon_linux_2023.id
+  ami                         = local.selected_ami_id
   instance_type               = var.ec2_instance_type
   subnet_id                   = aws_subnet.public_az1.id
   vpc_security_group_ids      = [aws_security_group.web.id]
@@ -145,7 +145,7 @@ resource "aws_instance" "app_vm" {
   user_data = templatefile(
     "${path.module}/ec2-init.sh.tpl",
     {
-      nickname = var.nickname
+      trainee_code = var.trainee_code
 
       db_host = aws_db_instance.mysql.address
       db_name = var.db_name
