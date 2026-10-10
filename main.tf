@@ -1,4 +1,4 @@
-# Network baseline (intentionally simple/public for training scenario)
+# VPC — our isolated virtual network
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -7,12 +7,14 @@ resource "aws_vpc" "main" {
   tags = merge(local.tags, { Name = local.vpc_name })
 }
 
+# Internet Gateway — allows resources in the VPC to reach the internet
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = merge(local.tags, { Name = local.internet_gw_name })
 }
 
+# Two public subnets in different Availability Zones (required by RDS)
 resource "aws_subnet" "public_az1" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidr_az1
@@ -31,6 +33,7 @@ resource "aws_subnet" "public_az2" {
   tags = merge(local.tags, { Name = local.subnet_az2_name })
 }
 
+# Route table — sends all traffic to the internet gateway
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -52,7 +55,7 @@ resource "aws_route_table_association" "public_az2" {
   route_table_id = aws_route_table.public.id
 }
 
-# Security groups intentionally permissive to mimic vulnerable Azure baseline.
+# Web security group — allows HTTP, HTTPS, and SSH from anywhere
 resource "aws_security_group" "web" {
   name        = local.web_sg_name
   description = "Baseline insecure web/admin access for CSE training"
@@ -92,6 +95,7 @@ resource "aws_security_group" "web" {
   tags = merge(local.tags, { Name = local.web_sg_name })
 }
 
+# DB security group — allows MySQL from anywhere (intentionally insecure)
 resource "aws_security_group" "db" {
   name        = local.db_sg_name
   description = "Baseline insecure DB access for CSE training"
@@ -115,6 +119,7 @@ resource "aws_security_group" "db" {
   tags = merge(local.tags, { Name = local.db_sg_name })
 }
 
+# Generate an SSH key pair — Terraform creates the key during apply
 resource "tls_private_key" "ec2_ssh" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -127,32 +132,38 @@ resource "aws_key_pair" "app_vm" {
   tags = merge(local.tags, { Name = local.ec2_key_pair_name })
 }
 
+# EC2 instance — our web server with LAMP stack
 resource "aws_instance" "app_vm" {
-  ami                         = local.selected_ami_id
+  ami                         = data.aws_ami.amazon_linux_2023.id
   instance_type               = var.ec2_instance_type
   subnet_id                   = aws_subnet.public_az1.id
   vpc_security_group_ids      = [aws_security_group.web.id]
   key_name                    = aws_key_pair.app_vm.key_name
   associate_public_ip_address = true
 
-  user_data = <<-EOT
-    #!/bin/bash
-    set -eux
-    dnf update -y
-    dnf install -y httpd php php-mysqlnd git mariadb105
-    systemctl enable httpd
-    systemctl start httpd
-  EOT
+  # Bootstrap script: installs Apache, PHP, MySQL client, and Git
+  user_data = templatefile(
+    "${path.module}/ec2-init.sh.tpl",
+    {
+      nickname = var.nickname
+
+      db_host = aws_db_instance.mysql.address
+      db_name = var.db_name
+      db_user = var.db_username
+      db_password = var.db_password
+    }
+  )
 
   tags = merge(local.tags, { Name = local.ec2_name })
 }
 
-# Public logo bucket equivalent to Azure blob storage account/container.
+# S3 bucket for the logo — publicly readable (intentionally insecure for training)
 resource "aws_s3_bucket" "logo" {
   bucket = local.logo_bucket_name
   tags   = merge(local.tags, { Name = local.logo_bucket_name, Purpose = "logo" })
 }
 
+# Disable Block Public Access so we can make objects publicly readable
 resource "aws_s3_bucket_public_access_block" "logo" {
   bucket = aws_s3_bucket.logo.id
 
@@ -162,6 +173,7 @@ resource "aws_s3_bucket_public_access_block" "logo" {
   restrict_public_buckets = false
 }
 
+# Bucket policy — allows anyone to read objects (intentionally insecure)
 resource "aws_s3_bucket_policy" "logo_public_read" {
   bucket = aws_s3_bucket.logo.id
   policy = jsonencode({
@@ -171,10 +183,8 @@ resource "aws_s3_bucket_policy" "logo_public_read" {
         Sid       = "AllowPublicReadForTraining"
         Effect    = "Allow"
         Principal = "*"
-        Action = [
-          "s3:GetObject"
-        ]
-        Resource = "${aws_s3_bucket.logo.arn}/*"
+        Action    = ["s3:GetObject"]
+        Resource  = "${aws_s3_bucket.logo.arn}/*"
       }
     ]
   })
@@ -182,11 +192,13 @@ resource "aws_s3_bucket_policy" "logo_public_read" {
   depends_on = [aws_s3_bucket_public_access_block.logo]
 }
 
+# S3 bucket for logs — NOT publicly accessible
 resource "aws_s3_bucket" "logs" {
   bucket = local.logs_bucket_name
   tags   = merge(local.tags, { Name = local.logs_bucket_name, Purpose = "logs" })
 }
 
+# Block all public access on the logs bucket (secure by default)
 resource "aws_s3_bucket_public_access_block" "logs" {
   bucket = aws_s3_bucket.logs.id
 
@@ -196,7 +208,7 @@ resource "aws_s3_bucket_public_access_block" "logs" {
   restrict_public_buckets = true
 }
 
-# Database baseline (intentionally internet-exposed for training parity).
+# DB subnet group — RDS requires subnets in at least 2 Availability Zones
 resource "aws_db_subnet_group" "main" {
   name       = local.db_subnet_group
   subnet_ids = [aws_subnet.public_az1.id, aws_subnet.public_az2.id]
@@ -204,6 +216,7 @@ resource "aws_db_subnet_group" "main" {
   tags = merge(local.tags, { Name = local.db_subnet_group })
 }
 
+# DB parameter group — disables SSL requirement (intentionally insecure for training)
 resource "aws_db_parameter_group" "mysql_insecure" {
   name   = local.db_parameter_group
   family = "mysql8.0"
@@ -216,6 +229,7 @@ resource "aws_db_parameter_group" "mysql_insecure" {
   tags = merge(local.tags, { Name = local.db_parameter_group })
 }
 
+# RDS MySQL instance — publicly accessible (intentionally insecure for training)
 resource "aws_db_instance" "mysql" {
   identifier             = local.db_identifier
   allocated_storage      = var.db_allocated_storage
