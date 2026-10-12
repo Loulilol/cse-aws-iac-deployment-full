@@ -1,7 +1,6 @@
 aws_region            = "eu-west-3"
-aws_profile           = "cse"
 region_short          = "ew3"
-trainee_code          = "t01"
+trigram               = "jdo"
 project_tag           = "cse-aws"
 environment           = "sandbox"
 

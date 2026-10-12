@@ -13,7 +13,6 @@ variable "region_short" {
 variable "trigram" {
   description = "Short trainee identifier used in resource names to keep them unique per trainee."
   type        = string
-  default     = "trigram"
 
   validation {
     condition     = can(regex("^[a-z]{2,4}$", var.trigram))
