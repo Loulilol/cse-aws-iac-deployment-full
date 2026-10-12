@@ -145,11 +145,9 @@ resource "aws_instance" "app_vm" {
   user_data = templatefile(
     "${path.module}/ec2-init.sh.tpl",
     {
-      trainee_code = var.trainee_code
-
-      db_host = aws_db_instance.mysql.address
-      db_name = var.db_name
-      db_user = var.db_username
+      db_host     = aws_db_instance.mysql.address
+      db_name     = var.db_name
+      db_user     = var.db_username
       db_password = var.db_password
     }
   )

@@ -4,26 +4,20 @@ variable "aws_region" {
   default     = "eu-west-3"
 }
 
-variable "aws_profile" {
-  description = "AWS CLI profile name used by Terraform provider."
-  type        = string
-  default     = "cse"
-}
-
 variable "region_short" {
   description = "Short region token used in resource naming."
   type        = string
   default     = "ew3"
 }
 
-variable "trainee_code" {
-  description = "Short trainee identifier used in names (example: t01)."
+variable "trigram" {
+  description = "Short trainee identifier used in resource names to keep them unique per trainee."
   type        = string
-  default     = "t01"
+  default     = "trigram"
 
   validation {
-    condition     = can(regex("^t[0-9]{2}$", var.trainee_code))
-    error_message = "trainee_code must match ^t[0-9]{2}$ (example: t01)."
+    condition     = can(regex("^[a-z]{2,4}$", var.trigram))
+    error_message = "trigram must be 2 to 4 lowercase letters (e.g. jdo)."
   }
 }
 

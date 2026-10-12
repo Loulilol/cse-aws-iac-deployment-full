@@ -11,14 +11,14 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 locals {
-  name_prefix     = "cse-sbx-${var.trainee_code}-${var.region_short}"
+  name_prefix     = "cse-sbx-${var.trigram}-${var.region_short}"
   selected_ami_id = var.ec2_ami_id != "" ? var.ec2_ami_id : data.aws_ami.amazon_linux_2023.id
 
   tags = merge(
     {
       Project     = var.project_tag
       Environment = var.environment
-      Trainee     = var.trainee_code
+      Trainee     = var.trigram
       ManagedBy   = "terraform"
     },
     var.common_tags
