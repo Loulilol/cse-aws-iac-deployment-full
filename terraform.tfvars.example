@@ -1,28 +1,16 @@
-aws_region            = "eu-west-3"
-region_short          = "ew3"
-trigram               = "jdo"
-project_tag           = "cse-aws"
-environment           = "sandbox"
+aws_region             = "eu-west-3"
+trigram                = "jdo"
 
-vpc_cidr              = "10.0.0.0/16"
+vpc_cidr               = "10.0.0.0/16"
 public_subnet_cidr_az1 = "10.0.1.0/24"
 public_subnet_cidr_az2 = "10.0.2.0/24"
-availability_zone_az1 = "eu-west-3a"
-availability_zone_az2 = "eu-west-3b"
+availability_zone_az1  = "eu-west-3a"
+availability_zone_az2  = "eu-west-3b"
 
-ec2_instance_type     = "t3.micro"
-ec2_key_pair_name     = ""
-ec2_ami_id            = ""
+ec2_instance_type      = "t3.micro"
 
-db_name               = "picturegallery"
-db_username           = "adminformation"
-db_password           = "CHANGE_ME_STRONG_PASSWORD"
-db_instance_class     = "db.t3.micro"
-db_allocated_storage  = 20
-
-logo_bucket_purpose   = "logo"
-logs_bucket_purpose   = "logs"
-
-common_tags = {
-  Owner = "hani.sami"
-}
+db_name                = "picturegallery"
+db_username            = "adminformation"
+db_password            = "CHANGE_ME_STRONG_PASSWORD"
+db_instance_class      = "db.t3.micro"
+db_allocated_storage   = 20

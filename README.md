@@ -1,34 +1,42 @@
-# CSE AWS Terraform Skeleton
+# AWS CSE IaC Full Deployment
 
-This folder is the AWS Terraform skeleton aligned with the Azure full deployment IaC here: 
-- [IaC_full_deployment-latest-vm-image-Azure/IaC_full_deployment-latest-vm-image/main.tf](https://github.com/csdso-wavestone/IaC_full_deployment/tree/latest-vm-image)
+Terraform project that deploys an intentionally insecure AWS sandbox environment (VPC, EC2, S3, RDS) for the [Cloud Security Engineering training](https://github.com/csdso-wavestone/aws-cse-guide). Trainees learn to identify vulnerabilities and remediate them via the AWS Console.
+
+The EC2 instance runs the [picturegallery](https://github.com/csdso-wavestone/picturegallery) PHP app, backed by RDS MySQL, with S3 for static assets. A bootstrap script (`ec2-init.sh.tpl`) fully deploys the app at first boot.
 
 ## Files
-- `versions.tf`: Terraform + provider versions.
-- `variables.tf`: input variables.
-- `locals.tf`: naming, tags, data sources. (New addition in the AWS version !)
-- `main.tf`: resource skeleton.
-- `outputs.tf`: deployment outputs (useful for the training). (New addition in the AWS version !)
-- `terraform.tfvars.example`: sample variable values.
 
-## Naming and Tagging
-- Required tag baseline: `Project=cse-aws`.
-- Naming convention:
-  - Base prefix: `cse-sbx-<trainee>-ew3` (TBC: fow now, by design, each trainee will receive a trainee ID associated with his sandbox/account)
-  - S3 uniqueness is ensured by: `...-<accountid>`
+- `versions.tf` — Terraform and provider versions (AWS, TLS).
+- `variables.tf` — Input variables. Trainees only need to set their `trigram` and `db_password`.
+- `locals.tf` — Naming conventions, tags, AMI lookup.
+- `main.tf` — All AWS resources (VPC, subnets, security groups, EC2, S3 buckets, RDS).
+- `ec2-init.sh.tpl` — EC2 bootstrap script run via `user_data` at first boot.
+- `outputs.tf` — Deployment outputs (EC2 IP, RDS endpoint, S3 bucket names, SSH key).
+- `terraform.tfvars.example` — Sample variable values to copy and edit.
 
 ## Usage
-1. Copy example vars:
+
+1. Copy the example vars and set your `trigram` and a strong `db_password`:
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 ```
-2. Update values/variables in `terraform.tfvars` (Attention: `aws_profile = "cse"` is a profile that was used to create the training, delete it OR replace the profile with your own (associated with your AWS credentials) before deploying). `ec2_key_pair_name` can stay empty to auto-generate and create the key pair (unless you want to use your own ssh key).
-3. Run:
+2. Deploy:
 ```bash
 terraform init
 terraform plan
 terraform apply
 ```
 
+Deployment takes about 10 minutes (mostly RDS provisioning). The website is live when `terraform apply` finishes.
+
+3. Retrieve outputs:
+```bash
+terraform output
+terraform output -raw ec2_public_ip
+terraform output -raw ec2_private_key_pem > cse-ec2-key.pem
+chmod 400 cse-ec2-key.pem
+```
+
 ## Author
+
 Hani SAMI - hani.sami@wavestone.com (Do not hesitate to contact me if you have any questions !)
