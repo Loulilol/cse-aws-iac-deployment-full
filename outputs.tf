@@ -55,7 +55,7 @@ output "rds_port" {
 
 output "cleanup_selector" {
   description = "This will be used for cleaning the sandbox ressources. Do not modify"
-  value       = "Project=${var.project_tag}"
+  value       = "Project=cse-aws"
 }
 
 output "ec2_key_pair_name" {
