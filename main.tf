@@ -134,7 +134,7 @@ resource "aws_key_pair" "app_vm" {
 
 # EC2 instance — our web server with LAMP stack
 resource "aws_instance" "app_vm" {
-  ami                         = local.selected_ami_id
+  ami                         = data.aws_ami.amazon_linux_2023.id
   instance_type               = var.ec2_instance_type
   subnet_id                   = aws_subnet.public_az1.id
   vpc_security_group_ids      = [aws_security_group.web.id]

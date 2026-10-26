@@ -4,12 +4,6 @@ variable "aws_region" {
   default     = "eu-west-3"
 }
 
-variable "region_short" {
-  description = "Short region token used in resource naming."
-  type        = string
-  default     = "ew3"
-}
-
 variable "trigram" {
   description = "Short trainee identifier used in resource names to keep them unique per trainee."
   type        = string
@@ -18,29 +12,6 @@ variable "trigram" {
     condition     = can(regex("^[a-z]{2,4}$", var.trigram))
     error_message = "trigram must be 2 to 4 lowercase letters (e.g. jdo)."
   }
-}
-
-variable "project_tag" {
-  description = "Mandatory project tag value used by cleanup policy."
-  type        = string
-  default     = "cse-aws"
-
-  validation {
-    condition     = var.project_tag == lower(var.project_tag)
-    error_message = "project_tag must be lowercase to match cleanup selector conventions."
-  }
-}
-
-variable "environment" {
-  description = "Environment tag value."
-  type        = string
-  default     = "sandbox"
-}
-
-variable "common_tags" {
-  description = "Optional additional tags merged with baseline tags."
-  type        = map(string)
-  default     = {}
 }
 
 variable "vpc_cidr" {
@@ -79,18 +50,6 @@ variable "ec2_instance_type" {
   default     = "t3.micro"
 }
 
-variable "ec2_key_pair_name" {
-  description = "Optional EC2 key pair name override. Leave empty to auto-generate and create one during apply."
-  type        = string
-  default     = ""
-}
-
-variable "ec2_ami_id" {
-  description = "Optional custom AMI ID. Leave empty to use latest Amazon Linux 2023."
-  type        = string
-  default     = ""
-}
-
 variable "db_name" {
   description = "Initial database name."
   type        = string
@@ -121,14 +80,3 @@ variable "db_allocated_storage" {
   default     = 20
 }
 
-variable "logo_bucket_purpose" {
-  description = "Purpose token for public logo bucket name."
-  type        = string
-  default     = "logo"
-}
-
-variable "logs_bucket_purpose" {
-  description = "Purpose token for logs bucket name."
-  type        = string
-  default     = "logs"
-}
